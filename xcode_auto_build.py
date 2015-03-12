@@ -5,7 +5,7 @@ import os
 import subprocess
 from string import Template
 
-APP_CONFIG_NAME = 'auto_build.conf'
+APP_CONFIG_NAME = 'build.ios.conf'
 SUPPORT_FIELD_DICT = {
 		'PROJECT_NAME' : None,
 		'LIBRARY_NAME' : None,
