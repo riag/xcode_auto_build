@@ -24,9 +24,11 @@ TARGET_NAME = ''
 DEPEND_ON_DICT = {}			
 				
 
-SDK_LIST = [ 'iphoneos8.0', 'iphonesimulator8.0' ]
+SDK_VERSION = None  # 自动选择xcode最新的版本
 
-RELEASE_SDK_LIST = [ 'iphoneos8.0' ]
+SDK_LIST = [ 'iphoneos', 'iphonesimulator' ]
+
+RELEASE_SDK_LIST = [ 'iphoneos' ]
 
 CONFIGURATION_LIST = ['Debug', 'Release']
 

@@ -18,6 +18,7 @@ SUPPORT_FIELD_DICT = {
 		'DIST_DIR' : '${PROJECT_DIR}/dist',
 		'COPY_FILES_LIST' : [],
 		'DEPEND_ON_DICT': {},
+		'SDK_VERSION': None,
 		}
 	
 RELEASE_CONFIGUATION = 'Release'
@@ -46,6 +47,12 @@ def command(cmd, succes_code_list=(0,), shell=True):
 	print >>sys.stdout, 'exec command: %s' % m
 	if code not in succes_code_list:
 		raise ExecCommandError(code, cmd)
+
+def command_result(cmd, shell=True):
+	proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=shell)
+	output = proc.stdout.read()
+	return output
+
 
 def _build(sdk, configuration, target=None):
 	args = ['-sdk', sdk]
@@ -93,6 +100,11 @@ def pre_build(project_dir, conf_vars, build_result):
 		src = os.path.join(src, '*')
 		_real_copy(src, dest, shell=True)
 
+def _get_sdk_current_version():
+	result = command_result("xcrun -sdk iphoneos --show-sdk-version")
+        if result is None: return ""
+        return result.rstrip();
+
 def build(project_dir, conf_vars):
 	sdk_list = conf_vars['SDK_LIST']
 	release_sdk_list = conf_vars['RELEASE_SDK_LIST']
@@ -101,6 +113,11 @@ def build(project_dir, conf_vars):
         APP_NAME = conf_vars['APP_NAME']
 	build_dir = conf_vars['BUILD_DIR']
 	dist_dir = conf_vars['DIST_DIR']
+	sdk_version = conf_vars['SDK_VERSION']
+
+	current_sdk_version = _get_sdk_current_version()
+	if sdk_version is None:
+		sdk_version = current_sdk_version
 
 	for configuration in configuration_list:
 
@@ -109,6 +126,10 @@ def build(project_dir, conf_vars):
 			k = release_sdk_list
 
 		for sdk in k:
+			# 如果sdk不带版本号的话，就加上版本号
+			if sdk in ('iphoneos', 'iphonesimulator'):
+				sdk = '%s%s' % (sdk, sdk_version)
+
 			_build(sdk, configuration, target)
                         if not APP_NAME: continue
 
