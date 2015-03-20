@@ -54,7 +54,7 @@ def command_result(cmd, shell=True):
 	return output
 
 
-def _build(sdk, configuration, target=None):
+def _build(sdk, configuration, variable_list, target=None):
 	args = ['-sdk', sdk]
 
 	args.extend(['-configuration', configuration])
@@ -64,6 +64,7 @@ def _build(sdk, configuration, target=None):
 	arch="arm7 arm7s"
 	args.extend(['ARCH="%s"' % arch,])
 	args.extend(['ONLY_ACTIVE_ARCH=No',])
+	args.extend(variable_list)
 
 	cmd = ['xcodebuild']
 	cmd.extend(args)
@@ -105,7 +106,7 @@ def _get_sdk_current_version():
         if result is None: return ""
         return result.rstrip();
 
-def build(project_dir, conf_vars):
+def build(project_dir, variable_list, conf_vars):
 	sdk_list = conf_vars['SDK_LIST']
 	release_sdk_list = conf_vars['RELEASE_SDK_LIST']
 	configuration_list = conf_vars['CONFIGURATION_LIST']
@@ -130,7 +131,7 @@ def build(project_dir, conf_vars):
 			if sdk in ('iphoneos', 'iphonesimulator'):
 				sdk = '%s%s' % (sdk, sdk_version)
 
-			_build(sdk, configuration, target)
+			_build(sdk, configuration, variable_list, target)
                         if not APP_NAME: continue
 
                         # 复制app到dist目录下
@@ -242,7 +243,7 @@ def prepare_conf(module, tmp_vars):
 
 	return conf_vars
 
-def build_project(project_dir, build_result):
+def build_project(project_dir, variable_list, build_result):
 	os.chdir(project_dir)
 	print >>sys.stdout, 'build project %s' % project_dir
 
@@ -256,17 +257,17 @@ def build_project(project_dir, build_result):
 
 	pre_build(project_dir, conf_vars, build_result)
 
-	build(project_dir, conf_vars)
+	build(project_dir, variable_list, conf_vars)
 
 	post_build(project_dir, conf_vars)
 
 	return conf_vars
 
-def build_multiple_projects(project_dir_list):
+def build_multiple_projects(project_dir_list, variable_list):
 	build_result = {}
 
 	for project_dir in project_dir_list:
-		conf_vars = build_project(project_dir, build_result)
+		conf_vars = build_project(project_dir, variable_list, build_result)
 
 		project_name = conf_vars['PROJECT_NAME']
 		dist_dir = conf_vars['DIST_DIR']
@@ -278,10 +279,10 @@ def _real_main(options):
 	project_list = options.project_list
 
 	if not project_list:
-		build_project(workdir, None)
+		build_project(workdir, options.variable_list, None)
 	else:
 		t = [ os.path.join(workdir, k) for k in project_list ]
-		build_multiple_projects(t)
+		build_multiple_projects(t, options.variable_list)
 
 if __name__ == '__main__':
 	import argparse
@@ -289,6 +290,7 @@ if __name__ == '__main__':
 	parse = argparse.ArgumentParser()
 	parse.add_argument('--workdir',) 
 	parse.add_argument('--project', dest='project_list', action='append')
+	parse.add_argument('-D', dest='variable_list', action='append')
 
 	args = parse.parse_args()
 	if (not args.workdir and not args.project_list):

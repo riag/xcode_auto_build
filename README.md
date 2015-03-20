@@ -48,11 +48,12 @@ COPY_FILES_LIST = (
 ### 编译
 脚本的用法：
 
-	python xcode_auto_build.py --workdir .  --project testLib --project testAPP
+	python xcode_auto_build.py --workdir .  --project testLib --project testAPP -D userVariable=xx
 
 ```
-	--workdir 项目的上一层目录
-	--project 项目目录的名字
+	--workdir 	项目的上一层目录
+	--project 	项目目录的名字
+	-D 		用户定义的变量，可选	
 ```
 
 脚本会按照 --project 定义的项目顺序来编译，所以项目之间有依赖关系，需要手工定义好项目的编译顺序
